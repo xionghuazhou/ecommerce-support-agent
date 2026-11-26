@@ -8,9 +8,15 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
 ![Vue](https://img.shields.io/badge/Vue_3-Pinia-4FC08D?logo=vue.js&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
+[![CI](https://github.com/xionghuazhou/ecommerce-support-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/xionghuazhou/ecommerce-support-agent/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/xionghuazhou/ecommerce-support-agent)](https://github.com/xionghuazhou/ecommerce-support-agent/releases)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 **English** | [简体中文](README.zh-CN.md)
+
+<img src="docs/images/chat-order-query.png" alt="Order query with intent, sentiment and tool call" width="800">
+
+*A real order-query conversation showing intent, sentiment and the query_order tool call.*
 
 </div>
 
@@ -104,6 +110,16 @@ python scripts/test_api.py       # 6 end-to-end conversation scenarios
 
 Demo account `demo_user` (ID=1) owns 4 orders in different states for querying/operating.
 
+## 📸 Analytics Dashboard
+
+<img src="docs/images/analytics-dashboard.png" alt="Customer service analytics dashboard" width="800">
+
+## 📌 Limitations
+
+- Orders, products and customers are demo data; no real payment, refund or logistics system is modified.
+- Without an embedding API key, local hash vectors provide degradation rather than true semantic embeddings.
+- The chat UI is currently Chinese; an English UI is on the roadmap.
+
 ## ⚙️ Configuration
 
 Copy `.env.example` to `.env` in the project root:
@@ -181,7 +197,7 @@ Issues and PRs are welcome! Please open an issue first for major changes.
 This project started as a reproduction of a public LLM-Agent development course project and was substantially reworked and extended by the author (see [Engineering Highlights](#-engineering-highlights)). Credit to the original course for the initial concept. Not affiliated with the course author.
 
 <!--
-After pushing to GitHub, uncomment and replace <your-username> to show star growth:
+After pushing to GitHub, uncomment to show star growth:
 
-[![Star History Chart](https://api.star-history.com/svg?repos=<your-username>/ecommerce-support-agent&type=Date)](https://star-history.com/#<your-username>/ecommerce-support-agent&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=xionghuazhou/ecommerce-support-agent&type=Date)](https://star-history.com/#xionghuazhou/ecommerce-support-agent&Date)
 -->

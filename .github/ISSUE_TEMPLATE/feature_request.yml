@@ -1,0 +1,23 @@
+name: Feature request
+description: Suggest a focused improvement for E-commerce Support Agent
+title: "[Feature] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Customer-service use case
+      description: What order, policy or support problem are you trying to solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior and acceptance criteria
+      description: Include tool behavior, guardrails and how to test the result.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

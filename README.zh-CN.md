@@ -8,9 +8,15 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
 ![Vue](https://img.shields.io/badge/Vue_3-Pinia-4FC08D?logo=vue.js&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
+[![CI](https://github.com/xionghuazhou/ecommerce-support-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/xionghuazhou/ecommerce-support-agent/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/xionghuazhou/ecommerce-support-agent)](https://github.com/xionghuazhou/ecommerce-support-agent/releases)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 [English](README.md) | **简体中文**
+
+<img src="docs/images/chat-order-query.png" alt="Order query with intent, sentiment and tool call" width="800">
+
+*真实订单查询对话：展示意图、情感和 query_order 工具调用。*
 
 </div>
 
@@ -104,6 +110,16 @@ python scripts/test_api.py       # 6 个端到端对话场景
 
 演示账号 `demo_user`（ID=1）名下有 4 笔不同状态的订单可供查询/操作。
 
+## 📸 数据看板
+
+<img src="docs/images/analytics-dashboard.png" alt="客服数据看板" width="800">
+
+## 📌 限制说明
+
+- 订单、商品和客户均为演示数据，不会修改真实支付、退款或物流系统。
+- 未配置 Embedding API Key 时，本地哈希向量用于降级，不等同于真正的语义嵌入。
+- 聊天界面目前为中文，英文界面已列入路线图。
+
 ## ⚙️ 配置说明
 
 复制根目录 `.env.example` 为 `.env`：
@@ -181,7 +197,7 @@ python scripts/test_api.py       # 6 个端到端对话场景
 本项目最初复现自一个公开的 LLM-Agent 开发课程项目，随后由作者大幅重构与扩展（见[工程亮点](#-工程亮点)）。感谢原课程提供的初始概念。与课程作者无关联。
 
 <!--
-After pushing to GitHub, uncomment and replace <your-username> to show star growth:
+After pushing to GitHub, uncomment to show star growth:
 
-[![Star History Chart](https://api.star-history.com/svg?repos=<your-username>/ecommerce-support-agent&type=Date)](https://star-history.com/#<your-username>/ecommerce-support-agent&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=xionghuazhou/ecommerce-support-agent&type=Date)](https://star-history.com/#xionghuazhou/ecommerce-support-agent&Date)
 -->
