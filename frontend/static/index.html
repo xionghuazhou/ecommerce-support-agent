@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智能客服小e - 电商智能客服系统</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+  <link rel="stylesheet" href="/style.css">
+  <!-- 本地化 CDN 库（vendor/），避免外部网络依赖；如需在线 CDN 可换回 jsdelivr/unpkg 地址 -->
+  <script src="/vendor/vue.global.prod.js"></script>
+  <script>window.VueDemi = window.Vue;</script><!-- Pinia IIFE 构建依赖 VueDemi 全局，Vue3 下等价于 Vue -->
+  <script src="/vendor/pinia.iife.prod.js"></script>
+</head>
+<body>
+<div id="app">
+  <div class="chat-app">
+    <!-- 顶部导航 -->
+    <header class="chat-header">
+      <div class="header-left">
+        <span class="bot-avatar">🤖</span>
+        <div class="header-info">
+          <span class="bot-name">智能客服小e</span>
+          <span class="status" :class="store.isConnected ? 'online' : 'offline'">
+            <i></i>{{ store.isConnected ? '在线' : '连接中...' }}
+          </span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" title="数据看板" @click="openDashboard">📊</button>
+        <button class="icon-btn" title="评价会话" @click="store.showRating = true" :disabled="!store.sessionId">⭐</button>
+        <button class="icon-btn" title="新建会话" @click="reinitSession">🔄</button>
+      </div>
+    </header>
+
+    <!-- 情感指示器 -->
+    <div v-if="store.currentSentiment" class="emotion-indicator" :class="store.currentSentiment">
+      <span class="emoji">{{ sentimentEmoji }}</span>
+      <span class="label">{{ sentimentLabel }}</span>
+      <span class="score">情绪得分 {{ store.sentimentScore > 0 ? '+' : '' }}{{ store.sentimentScore.toFixed(2) }}</span>
+    </div>
+
+    <!-- 聊天消息区域 -->
+    <div class="chat-messages" ref="messagesContainer">
+      <!-- 欢迎消息 -->
+      <div v-if="store.messages.length === 0 && !store.isTyping" class="welcome">
+        <div class="welcome-icon">🤖</div>
+        <h2>您好，我是智能客服小e</h2>
+        <p>我可以帮您查询订单、了解商品信息、解答售后问题等</p>
+        <div class="quick-services">
+          <button v-for="s in quickServices" :key="s.text" @click="store.sendMessage(s.text)">
+            {{ s.icon }} {{ s.text }}
+          </button>
+        </div>
+      </div>
+
+      <!-- 消息列表 -->
+      <div v-for="msg in store.messages" :key="msg.id"
+           class="message-bubble" :class="msg.isUser ? 'is-user' : 'is-bot'">
+        <div class="avatar" v-if="!msg.isUser"><span>🤖</span></div>
+        <div class="bubble-wrapper">
+          <!-- 意图/情感/工具标签（仅机器人消息） -->
+          <div v-if="!msg.isUser && (msg.intentName || msg.sentiment)" class="msg-tags">
+            <span v-if="msg.intentName" class="intent-tag">🏷️ {{ msg.intentName }}
+              <em>({{ Math.round((msg.confidence || 0) * 100) }}%)</em></span>
+            <span v-if="msg.sentiment" class="sentiment-tag" :class="msg.sentiment">
+              {{ sentimentEmojiOf(msg.sentiment) }} {{ sentimentTextOf(msg.sentiment) }}</span>
+            <span v-for="(t, i) in (msg.toolTrace || [])" :key="i" class="tool-tag">🔧 {{ t.tool }}</span>
+          </div>
+          <div class="bubble" :class="msg.isUser ? 'bubble-user' : 'bubble-bot'">
+            <div class="message-text" v-html="formatContent(msg.content)"></div>
+          </div>
+          <div class="message-time">{{ msg.time }}</div>
+        </div>
+        <div class="avatar" v-if="msg.isUser"><span>👤</span></div>
+      </div>
+
+      <!-- 加载中（打字动画） -->
+      <div v-if="store.isTyping" class="message-bubble is-bot">
+        <div class="avatar"><span>🤖</span></div>
+        <div class="bubble-wrapper">
+          <div class="bubble bubble-bot typing-bubble">
+            <div class="typing"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 快捷回复 -->
+    <div v-if="store.quickReplies.length && !store.isTyping" class="quick-reply">
+      <span class="qr-title">💡 您可能想了解：</span>
+      <button v-for="reply in store.quickReplies" :key="reply" @click="store.sendMessage(reply)">{{ reply }}</button>
+    </div>
+
+    <!-- 输入框 -->
+    <footer class="input-box">
+      <input v-model="inputText" type="text" maxlength="2000"
+             placeholder="请输入您的问题，例如：我的订单到哪了？"
+             @keydown.enter="send" :disabled="store.isTyping">
+      <button class="send-btn" @click="send" :disabled="!inputText.trim() || store.isTyping">发送</button>
+    </footer>
+
+    <!-- 评价弹窗 -->
+    <div v-if="store.showRating" class="modal-mask" @click.self="store.showRating = false">
+      <div class="modal">
+        <h3>请为本次服务评分</h3>
+        <div class="stars">
+          <span v-for="n in 5" :key="n" class="star" :class="{ active: n <= store.ratingScore }"
+                @click="store.ratingScore = n">★</span>
+        </div>
+        <textarea v-model="store.ratingComment" placeholder="说点什么吧（选填）" rows="3"></textarea>
+        <div class="modal-actions">
+          <button class="btn ghost" @click="store.showRating = false">取消</button>
+          <button class="btn primary" :disabled="!store.ratingScore" @click="submitRating">提交评价</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 数据看板弹窗 -->
+    <div v-if="showDashboard" class="modal-mask" @click.self="showDashboard = false">
+      <div class="modal dashboard">
+        <h3>📊 数据看板</h3>
+        <div v-if="dashboardLoading" class="dash-loading">加载中...</div>
+        <template v-else-if="dashboard">
+          <div class="metric-grid">
+            <div class="metric"><b>{{ dashboard.total_sessions }}</b><span>会话总量</span></div>
+            <div class="metric"><b>{{ dashboard.today_sessions }}</b><span>今日会话</span></div>
+            <div class="metric"><b>{{ dashboard.ai_resolve_rate }}%</b><span>AI 解决率</span></div>
+            <div class="metric"><b>{{ dashboard.avg_response_seconds }}s</b><span>平均响应</span></div>
+            <div class="metric"><b>{{ dashboard.transfer_rate }}%</b><span>转人工率</span></div>
+            <div class="metric"><b>{{ dashboard.avg_satisfaction || '-' }}</b><span>满意度均分</span></div>
+          </div>
+          <h4>意图分布</h4>
+          <div v-if="dashboard.intent_distribution.length" class="dist-list">
+            <div v-for="d in dashboard.intent_distribution.slice(0, 6)" :key="d.name" class="dist-row">
+              <span class="dist-name">{{ d.name }}</span>
+              <div class="dist-bar"><i :style="{ width: d.percent + '%' }"></i></div>
+              <span class="dist-val">{{ d.percent }}%</span>
+            </div>
+          </div>
+          <p v-else class="dash-empty">暂无数据，先聊几句吧～</p>
+          <h4>情感分布</h4>
+          <div class="sentiment-dist">
+            <span class="s-tag positive">😊 积极 {{ dashboard.sentiment_distribution.positive || 0 }}</span>
+            <span class="s-tag neutral">😐 中性 {{ dashboard.sentiment_distribution.neutral || 0 }}</span>
+            <span class="s-tag negative">😔 消极 {{ dashboard.sentiment_distribution.negative || 0 }}</span>
+          </div>
+        </template>
+        <div class="modal-actions">
+          <button class="btn primary" @click="showDashboard = false">关闭</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
